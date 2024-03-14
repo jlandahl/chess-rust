@@ -1,13 +1,14 @@
+#![allow(unused_variables, dead_code)]
+
 type File = i8;
 type Rank = i8;
 
-#[derive(Copy)]
-pub struct Board<T: Clone, Copy> {
+#[derive(Clone, Copy)]
+pub struct Board<T: Clone> {
     squares: [T;64]
 }
 
-impl<T> Clone for Board<T: Clone, Copy> { fn clone(&self) -> Self { *self } }
-impl<T> Board<T> {
+impl<T: Clone> Board<T> {
     fn new(squares: [T;64]) -> Self { Board{ squares } }
 }
 
@@ -81,11 +82,11 @@ type Direction = (File, Rank);
 type Directions = Vec<Direction>;
 type PseudoMoves = Vec<Vec<Square>>;
 
-fn empty_board<T: Clone, Copy>(empty: T) -> Board<T> {
+fn empty_board<T: Clone + Copy>(empty: T) -> Board<T> {
     Board::new([empty; 64])
 }
 
-fn each_square<T>(f: impl Fn(Square) -> T) -> Board<T> {
+fn each_square<T: Clone>(f: impl Fn(Square) -> T) -> Board<T> {
     Board::new(
     [f(Square::A1), f(Square::B1), f(Square::C1), f(Square::D1), f(Square::E1), f(Square::F1), f(Square::G1), f(Square::H1),
      f(Square::A2), f(Square::B2), f(Square::C2), f(Square::D2), f(Square::E2), f(Square::F2), f(Square::G2), f(Square::H2),
@@ -121,7 +122,7 @@ fn pseudo_moves_at(once: bool, dirs: Directions, sq: Square) -> PseudoMoves {
 }
 
 fn pseudo_moves(once: bool, dirs: Directions) -> Board<PseudoMoves> {
-    each_square(|sq| { pseudo_moves_at(once, dirs, sq) })
+    each_square(|sq| { pseudo_moves_at(once, dirs.clone(), sq) })
 }
 
 struct State {
@@ -171,10 +172,10 @@ fn main() {
     let b_moves = pseudo_moves(false, b_dirs);
     let n_moves = pseudo_moves(false, n_dirs);
     let r_moves = pseudo_moves(false, r_dirs);
-    let q_moves = pseudo_moves(false, q_dirs);
+    let q_moves = pseudo_moves(false, q_dirs.clone());
     let k_moves = pseudo_moves(true,  q_dirs);
 
     let mut state:State = State::new();
-    
+
     state.moves.push(Move::new(Piece::WN, Square::B1, Square::C3, Piece::__, None, false));
 }
